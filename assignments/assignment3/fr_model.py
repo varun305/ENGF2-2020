@@ -34,7 +34,7 @@ class RiverObject():
 
     def contains(self, frog):
         (frog_x, frog_y) = frog.get_position()
-        if frog_y != self.y or frog_x < self.x or frog_x > self.x + self.width:
+        if frog_y != self.y or frog_x < self.x - self.width//3 or frog_x > self.x + self.width:
             return False
         return True
 
@@ -263,9 +263,9 @@ class Model():
         # grid square)
         x = (spacing + GRID_SIZE)//2
         for i in range(0,6):
-            x = x + GRID_SIZE + spacing
             self.homes_x.append(x)
             self.homes_occupied.append(False)
+            x = x + GRID_SIZE + spacing
 
     def frog_is_home(self, home_num):
         assert(home_num >= 0 and home_num <= 4)
@@ -317,6 +317,7 @@ class Model():
             
     def new_life(self):
         self.controller.update_lives(self.lives)
+        self.frog.reset_position()
 
     def game_over(self):
         self.game_running = False
@@ -324,6 +325,7 @@ class Model():
         self.controller.game_over()
 
     def restart(self):
+        self.game_running = True
         self.level = 1
         self.score = 0
         self.reset_level()
@@ -368,11 +370,11 @@ class Model():
             # check if it's now on any other log
             for log in self.logs:
                 if log.contains(self.frog):
-                    on_long = log
+                    on_log = log
                     break
         if on_log is None:
             # frog is not on a log - it must be in the water
-            self.died()
+            # self.died()
             return
         else:
             # frog is on a log
@@ -383,7 +385,7 @@ class Model():
         (x, y) = self.frog.get_position()
         for car in self.cars:
             if car.collided(x, y):
-                self.died()
+                # self.died()
                 return
 
     def check_frog_entering_home(self):
@@ -405,6 +407,11 @@ class Model():
         if x < 0 or x > CANVAS_WIDTH:
             self.died()
             return
+
+        if x % GRID_SIZE != 20:
+            self.frog.x = x + 20
+        if y % GRID_SIZE != 0:
+            self.frog.y = y + 20
 
         if y >= GRID_SIZE * 10 and y <= GRID_SIZE * 14:
             # frog is on the road
